@@ -1,6 +1,7 @@
+import os
 from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
-import os
+
 class Settings(BaseSettings):
     # Proje Ayarları
     PROJECT_NAME: str = "Scalable E-Commerce API"
@@ -20,9 +21,8 @@ class Settings(BaseSettings):
     @property
     def DATABASE_URL(self) -> str:
         # os.getenv ile ortam değişkenini kontrol ediyoruz
-        import os
         url = os.getenv("DATABASE_URL")
-        if url and url.startswith("postgres://"):
+        if url and url.startswith("postgresql+asyncpg://"):
             # SQLAlchemy "postgres://" kabul etmez, "postgresql://" yapmamız lazım
             url = url.replace("postgres://", "postgresql+asyncpg://", 1)
             return url
