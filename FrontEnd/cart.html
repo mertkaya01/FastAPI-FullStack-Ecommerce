@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sepetim - MertStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">← Alışverişe Dön</a>
+            <span class="navbar-text text-light">🛒 Sepetiniz</span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Ürünler</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table align-middle table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ürün</th>
+                                    <th>Fiyat</th>
+                                    <th>Adet</th>
+                                    <th>Toplam</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart-items">
+                                </tbody>
+                        </table>
+                        
+                        <div id="empty-cart-msg" class="text-center d-none py-4">
+                            <h4>Sepetiniz boş 😔</h4>
+                            <p class="text-muted">Hadi biraz alışveriş yapalım!</p>
+                            <a href="index.html" class="btn btn-primary mt-2">Ürünlere Göz At</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Sipariş Özeti</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Ara Toplam:</span>
+                            <span class="fw-bold" id="cart-total">0 ₺</span>
+                        </div>
+                        <hr>
+                        <button class="btn btn-success w-100 py-2 fw-bold" onclick="completeOrder()">✅ Siparişi Tamamla</button>
+                        <button class="btn btn-outline-danger w-100 mt-2" onclick="clearCart()">🗑️ Sepeti Temizle</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+
+        // Sayfa açılınca sepeti yükle
+        document.addEventListener("DOMContentLoaded", () => {
+            loadCart();
+        });
+
+        function loadCart() {
+            // Veriyi çekiyoruz
+            const cart = JSON.parse(localStorage.getItem("cart")) || [];
+            
+            const tbody = document.getElementById("cart-items");
+            const emptyMsg = document.getElementById("empty-cart-msg");
+            const table = document.querySelector("table"); // Tabloyu gizlemek için
+            let totalAmount = 0;
+
+            tbody.innerHTML = ""; // Önce temizle
+
+            // Sepet Boş mu?
+            if (cart.length === 0) {
+                emptyMsg.classList.remove("d-none"); // Mesajı göster
+                table.classList.add("d-none");      // Tabloyu gizle
+                document.getElementById("cart-total").innerText = "0 ₺";
+                return;
+            } else {
+                emptyMsg.classList.add("d-none");
+                table.classList.remove("d-none");
+            }
+
+            // Ürünleri Listele
+            cart.forEach((item, index) => {
+                const rowTotal = item.price * item.quantity;
+                totalAmount += rowTotal;
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><span class="fw-bold">${item.name}</span></td>
+                    <td>${item.price} ₺</td>
+                    <td>
+                        <span class="badge bg-secondary fs-6">${item.quantity}</span>
+                    </td>
+                    <td class="fw-bold text-primary">${rowTotal} ₺</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="removeItem(${index})">Sil</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById("cart-total").innerText = totalAmount + " ₺";
+        }
+
+        function removeItem(index) {
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+            cart.splice(index, 1); // O sıradaki ürünü sil
+            localStorage.setItem("cart", JSON.stringify(cart));
+            loadCart(); // Tabloyu güncelle
+        }
+
+        function clearCart() {
+            if(confirm("Sepet tamamen silinecek?")) {
+                localStorage.removeItem("cart");
+                loadCart();
+            }
+        }
+
+        // --- SİPARİŞİ TAMAMLA ---
+        async function completeOrder() {
+            const cart = JSON.parse(localStorage.getItem("cart")) || [];
+            const token = localStorage.getItem("token");
+
+            if (cart.length === 0) {
+                alert("Sepetiniz boş!");
+                return;
+            }
+            
+            if (!token) {
+                alert("Lütfen tekrar giriş yapın.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            if (!confirm(`Toplam ${document.getElementById("cart-total").innerText} tutarında siparişi onaylıyor musunuz?`)) return;
+
+            // Backend formatına çevir
+            const orderPayload = {
+                items: cart.map(item => ({
+                    product_id: item.product_id,
+                    quantity: item.quantity
+                }))
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/orders/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(orderPayload)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`🎉 SİPARİŞ BAŞARILI!\n\nSipariş No: #${result.id}\nTutar: ${result.total_amount} ₺\n\nStoklar güncellendi.`);
+                    
+                    localStorage.removeItem("cart"); // Sepeti boşalt
+                    window.location.href = "index.html"; // Ana sayfaya dön
+                } else {
+                    const error = await response.json();
+                    alert("Hata: " + (error.detail || "Sipariş oluşturulamadı."));
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("Sunucu hatası! Backend çalışıyor mu?");
+            }
+        }
+    </script>
+</body>
+</html>

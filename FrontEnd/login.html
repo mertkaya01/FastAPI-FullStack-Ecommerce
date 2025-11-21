@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap / Kayıt Ol - MertStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light d-flex justify-content-center align-items-center vh-100">
+
+    <div class="card shadow p-4" style="width: 400px;">
+        <h3 class="text-center mb-4">🚀 MertStore</h3>
+
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button">Giriş Yap</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button">Kayıt Ol</button>
+            </li>
+        </ul>
+
+        <div class="tab-content mt-3" id="myTabContent">
+            
+            <div class="tab-pane fade show active" id="login" role="tabpanel">
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label class="form-label">Email Adresi</label>
+                        <input type="email" class="form-control" id="loginEmail" required placeholder="admin@test.com">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Şifre</label>
+                        <input type="password" class="form-control" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
+                </form>
+            </div>
+
+            <div class="tab-pane fade" id="register" role="tabpanel">
+                <form id="registerForm">
+                    <div class="mb-3">
+                        <label class="form-label">Email Adresi</label>
+                        <input type="email" class="form-control" id="regEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Şifre</label>
+                        <input type="password" class="form-control" id="regPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Kayıt Ol</button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="messageBox" class="mt-3"></div>
+        <a href="index.html" class="text-center mt-3 d-block">← Ana Sayfaya Dön</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+
+        // --- KAYIT OLMA İŞLEMİ ---
+        document.getElementById("registerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("regEmail").value;
+            const password = document.getElementById("regPassword").value;
+
+            try {
+                const response = await fetch(`${API_URL}/users/`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                if (response.ok) {
+                    showAlert("success", "Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
+                    // Otomatik olarak Giriş sekmesine geç
+                    document.getElementById("login-tab").click();
+                    document.getElementById("loginEmail").value = email;
+                } else {
+                    const errorData = await response.json();
+                    showAlert("danger", "Hata: " + (errorData.detail || "Kayıt olunamadı."));
+                }
+            } catch (error) {
+                showAlert("danger", "Sunucu hatası!");
+            }
+        });
+
+        // --- GİRİŞ YAPMA İŞLEMİ ---
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
+
+            // FastAPI OAuth2 form verisi bekler (JSON değil!)
+            const formData = new URLSearchParams();
+            formData.append("username", email); // FastAPI "username" adıyla bekler
+            formData.append("password", password);
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // TOKEN'I KAYDET! (Local Storage)
+                    localStorage.setItem("token", data.access_token);
+                    localStorage.setItem("userEmail", email);
+
+                    showAlert("success", "Giriş başarılı! Yönlendiriliyorsunuz...");
+                    
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 1000);
+                } else {
+                    showAlert("danger", "Email veya şifre hatalı!");
+                }
+            } catch (error) {
+                console.log(error);
+                showAlert("danger", "Sunucuya bağlanılamadı.");
+            }
+        });
+
+        function showAlert(type, message) {
+            const box = document.getElementById("messageBox");
+            box.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        }
+    </script>
+</body>
+</html>

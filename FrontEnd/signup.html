@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayıt Ol</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5" style="max-width: 450px;">
+    <div class="card shadow">
+        <div class="card-body p-4">
+            <h3 class="text-center mb-4">📝 Kayıt Ol</h3>
+
+            <div class="mb-3">
+                <label class="form-label">Ad Soyad</label>
+                <input type="text" class="form-control" placeholder="Mert Kaya">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">E-posta</label>
+                <input type="email" class="form-control" placeholder="mail@example.com">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Şifre</label>
+                <input type="password" class="form-control" placeholder="••••••">
+            </div>
+
+            <button class="btn btn-success w-100" onclick="signup()">Kayıt Ol</button>
+
+            <div class="text-center mt-3">
+                <a href="login.html">Zaten bir hesabın var mı?</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function signup() {
+    alert("Backend bağlantısı yapılmadı. Şimdilik kayıt simülasyonu yapılıyor.");
+    window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>

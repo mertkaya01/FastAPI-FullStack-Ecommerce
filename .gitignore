@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Environment Variables (Şifreleri asla yükleme!)
+.env
+
+# Docker
+postgres_data/
+
+# IDE
+.vscode/
+.idea/
