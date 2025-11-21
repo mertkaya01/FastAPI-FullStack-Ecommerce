@@ -28,8 +28,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(title="Scalable E-Commerce API", lifespan=lifespan)
-app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/", StaticFiles(directory="FrontEnd", html=True), name="frontend")
+
 
 # --- CORS AYARLARI ---
 app.add_middleware(
@@ -46,6 +45,11 @@ app.include_router(user_router.router)
 app.include_router(auth_router.router)
 app.include_router(product_router.router)
 app.include_router(order_router.router)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/", StaticFiles(directory="FrontEnd", html=True), name="frontend")
+
+
 @app.get("/health")
 async def health_check(db: AsyncSession = Depends(get_db)):
     try:
