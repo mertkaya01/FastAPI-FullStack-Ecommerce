@@ -29,6 +29,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Scalable E-Commerce API", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
 # --- CORS AYARLARI ---
 app.add_middleware(
