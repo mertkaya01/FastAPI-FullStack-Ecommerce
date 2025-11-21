@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
-
+import os
 class Settings(BaseSettings):
     # Proje Ayarları
     PROJECT_NAME: str = "Scalable E-Commerce API"
@@ -30,3 +30,5 @@ class Settings(BaseSettings):
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     model_config = ConfigDict(env_file=".env")
+    
+settings = Settings()
