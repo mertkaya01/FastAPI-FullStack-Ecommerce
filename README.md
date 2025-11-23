@@ -58,6 +58,7 @@ Proje **Docker** üzerinde çalışacak şekilde tasarlanmıştır.
 
 ---
 *Computer Engineering Senior Project - 2025*
+*Tam bir server için Render kullandım.*
 
 // Some Terminal tips for new users:
 - docker compose down -v //
